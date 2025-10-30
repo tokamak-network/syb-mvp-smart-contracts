@@ -1,0 +1,47 @@
+# Environment variables
+.env
+.env.local
+
+# Hardhat files
+cache
+artifacts
+typechain-types
+
+# Coverage reports
+coverage
+coverage.json
+
+# Hardhat Ignition default folder for deployments against a local node
+ignition/deployments/chain-31337
+
+# Node modules
+node_modules
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Build artifacts
+dist
+build
+out
+
+# Test artifacts
+.nyc_output
+
+# Exported network data
+exports/
+
+docs
+
+wallets

@@ -1,0 +1,38 @@
+{
+  "name": "syb-mvp-contracts",
+  "version": "1.0.0",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:localhost": "hardhat run scripts/deploy-vouchminimal.ts --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy-vouchminimal.ts --network sepolia",
+    "deploy:arbitrum-sepolia": "hardhat run scripts/deploy-vouchminimal.ts --network arbitrumSepolia",
+    "deploy:base-sepolia": "hardhat run scripts/deploy-vouchminimal.ts --network baseSepolia",
+    "deploy:mainnet": "hardhat run scripts/deploy-vouchminimal.ts --network mainnet",
+    "deploy:arbitrum": "hardhat run scripts/deploy-vouchminimal.ts --network arbitrum",
+    "deploy:base": "hardhat run scripts/deploy-vouchminimal.ts --network base",
+    "setup:sepolia": "hardhat run scripts/setup-sepolia-network.ts --network sepolia",
+    "fetch:network": "hardhat run scripts/fetch-network-data.ts",
+    "query:network": "hardhat run scripts/query-network.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
+    "@nomicfoundation/hardhat-ethers": "^3.1.0",
+    "@nomicfoundation/hardhat-ignition": "^0.15.13",
+    "@nomicfoundation/hardhat-ignition-ethers": "^0.15.14",
+    "@nomicfoundation/hardhat-network-helpers": "^1.1.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@nomicfoundation/hardhat-verify": "^2.1.1",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "chai": "^4.5.0",
+    "ethers": "^6.15.0",
+    "hardhat": "^2.26.3",
+    "hardhat-gas-reporter": "^2.3.0",
+    "solidity-coverage": "^0.8.16",
+    "typechain": "^8.3.2"
+  }
+}
