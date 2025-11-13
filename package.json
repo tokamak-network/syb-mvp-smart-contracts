@@ -12,6 +12,7 @@
     "deploy:arbitrum": "hardhat run scripts/deploy-vouchminimal.ts --network arbitrum",
     "deploy:base": "hardhat run scripts/deploy-vouchminimal.ts --network base",
     "setup:sepolia": "hardhat run scripts/setup-sepolia-network.ts --network sepolia",
+    "test:network": "hardhat run scripts/test-vouch-network.ts",
     "fetch:network": "hardhat run scripts/fetch-network-data.ts",
     "query:network": "hardhat run scripts/query-network.ts"
   },
