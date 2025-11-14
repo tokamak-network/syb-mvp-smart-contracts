@@ -2,11 +2,12 @@
 pragma solidity ^0.8.24;
 
 contract VouchMinimal {
-    uint256 public constant DEFAULT_RANK = 10**24; // rank if no IN neighbors
-    uint256 public constant R = 64;                // weight window: c_r = 2^(R - r) for r<=R
-    uint256 public constant BONUS_OUT = 2**59;     // tiny per-outedge bonus
+    uint256 public constant DEFAULT_RANK = 6; // rank if no IN neighbors
+    uint256 public constant R = 5;                // weight window: c_r = 2^(R - r) for r<=R
+    uint256 public constant BONUS_OUT = 1;     // tiny per-outedge bonus
     uint256 public constant BONUS_CAP = 15;        // cap for outdegree bonus
-    uint256 public seedVouchCount;                 // first 5 vouches seed endpoints to rank=1
+    uint256 public constant MAX_SEEDVOUCHES = 5;        // first 5 vouches seed endpoints to rank=1
+    uint256 public seedVouchCount = 0;                
 
     struct Node {
         uint256 rank;         // 0 => DEFAULT_RANK
@@ -239,7 +240,7 @@ contract VouchMinimal {
         }
     }
 
-    // r[v] = 3*k + 1 - m, with k = min rank over IN(v), m = multiplicity of k
+    // r[v] = 3*k + 1 - min(m,3), with k = min rank over IN(v), m = multiplicity of k
     function _recomputeRankOnly(address v) internal {
         address[] storage ins = nodes[v].inNeighbors;
         if (ins.length == 0) { nodes[v].rank = DEFAULT_RANK; return; }
@@ -251,10 +252,10 @@ contract VouchMinimal {
             for (uint256 i = 0; i < len; ++i) {
                 uint256 ru = _rankOrDefault(ins[i]);
                 if (ru < k) { k = ru; m = 1; }
-                else if (ru == k) { ++m; }
+                else if (ru == k && m < 3) { ++m; }
             }
             uint256 rv = 3 * k + 1 - m;
-            if (rv == 0) rv = 1;
+            //if (rv == 0) rv = 1;
             nodes[v].rank = rv;
         }
     }
