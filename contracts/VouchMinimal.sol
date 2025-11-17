@@ -2,11 +2,12 @@
 pragma solidity ^0.8.24;
 
 contract VouchMinimal {
-    uint256 public constant DEFAULT_RANK = 10**24; // rank if no IN neighbors
-    uint256 public constant R = 64;                // weight window: c_r = 2^(R - r) for r<=R
-    uint256 public constant BONUS_OUT = 2**59;     // tiny per-outedge bonus
+    uint256 public constant DEFAULT_RANK = 6;      // rank if no IN neighbors
+    uint256 public constant R = 5;                 // weight window: c_r = 2^(R - r) for r<=R
+    uint256 public constant BONUS_OUT = 1;         // tiny per-outedge bonus
     uint256 public constant BONUS_CAP = 15;        // cap for outdegree bonus
-    uint256 public seedVouchCount;                 // first 5 vouches seed endpoints to rank=1
+    uint256 public constant MAX_SEEDVOUCHES = 5;   // first 5 vouches seed endpoints to rank=1
+    uint256 public seedVouchCount = 0;             // counter for seed vouches
 
     struct Node {
         uint256 rank;         // 0 => DEFAULT_RANK
@@ -107,7 +108,7 @@ contract VouchMinimal {
         nodes[from].outNeighbors.push(to);    // Track outgoing vouch
         nodes[to].inNeighbors.push(from);
 
-        if (seedVouchCount < 4) {
+        if (seedVouchCount < MAX_SEEDVOUCHES) {
             // Check if nodes are being activated for the first time
             bool fromIsNew = nodes[from].rank == 0;
             bool toIsNew = nodes[to].rank == 0;
@@ -139,7 +140,7 @@ contract VouchMinimal {
             );
             
             // Check if bootstrap phase is complete
-            if (seedVouchCount == 4) {
+            if (seedVouchCount == MAX_SEEDVOUCHES) {
                 emit BootstrapComplete();
             }
             
@@ -253,10 +254,10 @@ contract VouchMinimal {
                 if (ru < k) { k = ru; m = 1; }
                 else if (ru == k) { ++m; }
             }
-            uint256 rv = 3 * k + 1 - m;
-            if (rv == 0) rv = 1;
-            nodes[v].rank = rv;
         }
+        uint256 base = 3 * k + 1;
+        uint256 rv = base > m ? base - m : 1;
+        nodes[v].rank = rv;
     }
 
     // score[a] = sum_{u in IN(a)} c_{r[u]}  +  BONUS_OUT * min(BONUS_CAP, outdeg(a))
