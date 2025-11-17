@@ -240,7 +240,7 @@ contract VouchMinimal {
         }
     }
 
-    // r[v] = 3*k + 1 - m, with k = min rank over IN(v), m = multiplicity of k
+    // r[v] = 3*k + 1 - min(m,3), with k = min rank over IN(v), m = multiplicity of k
     function _recomputeRankOnly(address v) internal {
         address[] storage ins = nodes[v].inNeighbors;
         if (ins.length == 0) { nodes[v].rank = DEFAULT_RANK; return; }
@@ -252,12 +252,11 @@ contract VouchMinimal {
             for (uint256 i = 0; i < len; ++i) {
                 uint256 ru = _rankOrDefault(ins[i]);
                 if (ru < k) { k = ru; m = 1; }
-                else if (ru == k) { ++m; }
+                else if (ru == k && m < 3) { ++m; }
             }
+            uint256 rv = 3 * k + 1 - m;
+            nodes[v].rank = rv;
         }
-        uint256 base = 3 * k + 1;
-        uint256 rv = base > m ? base - m : 1;
-        nodes[v].rank = rv;
     }
 
     // score[a] = sum_{u in IN(a)} c_{r[u]}  +  BONUS_OUT * min(BONUS_CAP, outdeg(a))
