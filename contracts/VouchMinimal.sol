@@ -2,13 +2,12 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface IDepositManager {
     function accStakedAccount(address account) external view returns (uint256 wtonAmount);
 }
 
-contract VouchMinimal is Ownable, ReentrancyGuard {
+contract VouchMinimal is Ownable {
     // Deposit Manager for staking verification
     IDepositManager public depositManager;
     uint256 public minimumStake; // Minimum stake required to vouch (in WTON units)
@@ -141,7 +140,7 @@ contract VouchMinimal is Ownable, ReentrancyGuard {
     }
 
     // ---- core: vouch (u -> v) ----
-    function vouch(address to) external nonReentrant {
+    function vouch(address to) external {
         address from = msg.sender;
         require(to != address(0), "zero");
         require(to != from, "self");
@@ -230,7 +229,7 @@ contract VouchMinimal is Ownable, ReentrancyGuard {
     }
     
     // ---- core: unvouch (u -x-> v) ----
-    function unvouch(address to) external nonReentrant {
+    function unvouch(address to) external {
         address from = msg.sender;
         require(to != address(0), "zero");
         require(to != from, "self");
