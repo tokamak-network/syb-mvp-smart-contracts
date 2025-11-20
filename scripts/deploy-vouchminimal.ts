@@ -7,10 +7,20 @@ async function main() {
   console.log("Deploying contracts with account:", deployer.address);
   console.log("Account balance:", ethers.formatEther(await ethers.provider.getBalance(deployer.address)));
 
+  // Configuration
+  // DepositManager contract address on your network
+  const DEPOSIT_MANAGER_ADDRESS = process.env.DEPOSIT_MANAGER_ADDRESS || "0x90ffcc7F168DceDBEF1Cb6c6eB00cA73F922956F";
+  // Minimum stake required (default: 0 for no minimum requirement)
+  const MINIMUM_STAKE = process.env.MINIMUM_STAKE || "0";
+
+  console.log("\n📋 Configuration:");
+  console.log("DepositManager Address:", DEPOSIT_MANAGER_ADDRESS);
+  console.log("Minimum Stake Required:", MINIMUM_STAKE, "WTON");
+
   // Deploy VouchMinimal
   console.log("\nDeploying VouchMinimal contract...");
   const VouchMinimal = await ethers.getContractFactory("VouchMinimal");
-  const vouchMinimal = await VouchMinimal.deploy();
+  const vouchMinimal = await VouchMinimal.deploy(DEPOSIT_MANAGER_ADDRESS, MINIMUM_STAKE);
   
   await vouchMinimal.waitForDeployment();
   const address = await vouchMinimal.getAddress();
@@ -51,7 +61,7 @@ async function main() {
   try {
     await run("verify:verify", {
       address: address,
-      constructorArguments: [],
+      constructorArguments: [DEPOSIT_MANAGER_ADDRESS, MINIMUM_STAKE],
     });
     console.log("✅ Contract verified successfully!");
   } catch (error: any) {
@@ -60,11 +70,11 @@ async function main() {
     } else if (error.message.includes("does not have bytecode")) {
       console.log("⚠️  Verification skipped - contract not yet indexed by block explorer");
       console.log("   Please wait a minute and verify manually:");
-      console.log(`   npx hardhat verify --network ${network.name} ${address}`);
+      console.log(`   npx hardhat verify --network ${network.name} ${address} ${DEPOSIT_MANAGER_ADDRESS} ${MINIMUM_STAKE}`);
     } else {
       console.log("⚠️  Verification failed:", error.message);
       console.log("\n   You can verify manually with:");
-      console.log(`   npx hardhat verify --network ${network.name} ${address}`);
+      console.log(`   npx hardhat verify --network ${network.name} ${address} ${DEPOSIT_MANAGER_ADDRESS} ${MINIMUM_STAKE}`);
     }
   }
 
@@ -74,7 +84,11 @@ async function main() {
   console.log(`   CONTRACT_ADDRESS=${address} npx hardhat run scripts/interact-vouchminimal.ts --network ${network.name}`);
   console.log("\n2. Query the network:");
   console.log(`   CONTRACT_ADDRESS=${address} npm run query:network -- --network ${network.name}`);
-  console.log("\nNote: VouchMinimal uses a bootstrap mechanism - the first 4 vouches automatically seed the network.");
+  console.log("\n⚠️  Important Notes:");
+  console.log("• VouchMinimal uses a bootstrap mechanism - the first 5 vouches automatically seed the network.");
+  console.log("• Users must have staked tokens in the DepositManager to vouch.");
+  console.log(`• Minimum stake required: ${MINIMUM_STAKE} WTON`);
+  console.log(`• DepositManager: ${DEPOSIT_MANAGER_ADDRESS}`);
 }
 
 main()

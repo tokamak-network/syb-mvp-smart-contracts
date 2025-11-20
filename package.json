@@ -17,6 +17,7 @@
     "query:network": "hardhat run scripts/query-network.ts"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {
