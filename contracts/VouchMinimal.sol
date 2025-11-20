@@ -1,7 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-contract VouchMinimal {
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+interface IDepositManager {
+    function accStakedAccount(address account) external view returns (uint256 wtonAmount);
+}
+
+contract VouchMinimal is Ownable {
+    // Deposit Manager for staking verification
+    IDepositManager public depositManager;
+    uint256 public minimumStake; // Minimum stake required to vouch (in WTON units)
     uint256 public constant DEFAULT_RANK = 6;      // rank if no IN neighbors
     uint256 public constant R = 5;                 // weight window: c_r = 2^(R - r) for r<=R
     uint256 public constant BONUS_OUT = 1;         // tiny per-outedge bonus
@@ -29,6 +38,31 @@ contract VouchMinimal {
     event RankChanged(address indexed node, uint256 oldRank, uint256 newRank);
     event BootstrapVouchCreated(address indexed from, address indexed to, uint256 seedNumber);
     event BootstrapComplete();
+    event DepositManagerUpdated(address indexed oldManager, address indexed newManager);
+    event MinimumStakeUpdated(uint256 oldMinimum, uint256 newMinimum);
+
+    // ---- constructor ----
+    constructor(address _depositManager, uint256 _minimumStake) Ownable(msg.sender) {
+        require(_depositManager != address(0), "Invalid deposit manager");
+        depositManager = IDepositManager(_depositManager);
+        minimumStake = _minimumStake;
+        emit DepositManagerUpdated(address(0), _depositManager);
+        emit MinimumStakeUpdated(0, _minimumStake);
+    }
+
+    // ---- admin functions ----
+    function setDepositManager(address _depositManager) external onlyOwner {
+        require(_depositManager != address(0), "Invalid deposit manager");
+        address oldManager = address(depositManager);
+        depositManager = IDepositManager(_depositManager);
+        emit DepositManagerUpdated(oldManager, _depositManager);
+    }
+
+    function setMinimumStake(uint256 _minimumStake) external onlyOwner {
+        uint256 oldMinimum = minimumStake;
+        minimumStake = _minimumStake;
+        emit MinimumStakeUpdated(oldMinimum, _minimumStake);
+    }
 
     // ---- views ----
     function getRank(address a) external view returns (uint256) {
@@ -95,12 +129,23 @@ contract VouchMinimal {
         outNeighbors = nodes[a].outNeighbors;
     }
 
+    // ---- helper: check staking requirement ----
+    function hasMinimumStake(address account) public view returns (bool) {
+        uint256 stakedAmount = depositManager.accStakedAccount(account);
+        return stakedAmount >= minimumStake;
+    }
+
+    function getStakedAmount(address account) external view returns (uint256) {
+        return depositManager.accStakedAccount(account);
+    }
+
     // ---- core: vouch (u -> v) ----
     function vouch(address to) external {
         address from = msg.sender;
         require(to != address(0), "zero");
         require(to != from, "self");
         require(!hasEdge[from][to], "exists");
+        require(hasMinimumStake(from), "Insufficient stake to vouch");
 
         // create directed edge u->v
         hasEdge[from][to] = true;
